@@ -33,21 +33,41 @@ const selector = document.querySelector("#meridianSelector");
 const chart = document.querySelector("#elementChart");
 let selectedMeridianId = "lu";
 
+const ELEMENT_PAIRS = [
+  { id: "wood", zh: "木", meridians: ["lr", "gb"] },
+  { id: "fire", zh: "火", meridians: ["ht", "si"] },
+  { id: "earth", zh: "土", meridians: ["sp", "st"] },
+  { id: "metal", zh: "金", meridians: ["lu", "li"] },
+  { id: "water", zh: "水", meridians: ["ki", "bl"] }
+];
+
 const ELEMENTS = {
-  fire: { zh: "火", x: 180, y: 48 },
-  earth: { zh: "土", x: 295, y: 132 },
-  metal: { zh: "金", x: 250, y: 268 },
-  water: { zh: "水", x: 110, y: 268 },
-  wood: { zh: "木", x: 65, y: 132 }
+  fire: { zh: "火", x: 180, y: 42 },
+  earth: { zh: "土", x: 254, y: 108 },
+  metal: { zh: "金", x: 236, y: 216 },
+  water: { zh: "水", x: 124, y: 216 },
+  wood: { zh: "木", x: 106, y: 108 }
 };
 const MOTHER_OF = { wood: "water", fire: "wood", earth: "fire", metal: "earth", water: "metal" };
 const CHILD_OF = { wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" };
 const CONTROLLER_OF = { wood: "metal", fire: "water", earth: "wood", metal: "fire", water: "earth" };
 const GENERATION_EDGES = [["wood", "fire"], ["fire", "earth"], ["earth", "metal"], ["metal", "water"], ["water", "wood"]];
 const CONTROL_EDGES = [["wood", "earth"], ["earth", "water"], ["water", "fire"], ["fire", "metal"], ["metal", "wood"]];
+const CHART_POINT_POSITIONS = {
+  fire: { x: 210, y: -70 },
+  earth: { x: 286, y: 46 },
+  metal: { x: 270, y: 146 },
+  water: { x: 16, y: 146 },
+  wood: { x: 0, y: 46 }
+};
 
-function formulaMarkup(formula) {
-  return `<span class="formula-action tonify">补</span><span class="formula-point-list">${formula.plus.map(pointMarkup).join("")}</span><span class="formula-action sedate">泻</span><span class="formula-point-list">${formula.minus.map(pointMarkup).join("")}</span>`;
+function currentMeridianFirst(points, meridianCode) {
+  const isCurrentMeridianPoint = (point) => point.match(/([A-Z]+)\d+$/)?.[1] === meridianCode;
+  return [...points].sort((a, b) => Number(isCurrentMeridianPoint(b)) - Number(isCurrentMeridianPoint(a)));
+}
+
+function formulaMarkup(formula, meridianCode, labels) {
+  return `<span class="formula-action tonify">${labels.plus}</span><span class="formula-point-list">${currentMeridianFirst(formula.plus, meridianCode).map(pointMarkup).join("")}</span><span class="formula-action sedate">${labels.minus}</span><span class="formula-point-list">${currentMeridianFirst(formula.minus, meridianCode).map(pointMarkup).join("")}</span>`;
 }
 
 function pointMarkup(point) {
@@ -59,14 +79,20 @@ function pointMarkup(point) {
 }
 
 function renderSelector() {
-  selector.innerHTML = MERIDIANS.map((item) => `
-    <button class="meridian-button meridian-${item.element}${item.id === selectedMeridianId ? " is-selected" : ""}" type="button" data-id="${item.id}" aria-pressed="${item.id === selectedMeridianId}">
-      <strong>${item.name.replace("经", "")}</strong><span>${item.code}</span>
-    </button>`).join("");
-  selector.querySelector(`[data-id="${selectedMeridianId}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
+  selector.innerHTML = ELEMENT_PAIRS.map((elementPair) => {
+    const meridians = elementPair.meridians.map((id) => MERIDIANS.find((item) => item.id === id));
+    const selected = meridians.find((item) => item.id === selectedMeridianId);
+    const current = selected || meridians[0];
+    const alternate = meridians.find((item) => item.id !== current.id);
+    return `
+    <button class="meridian-button meridian-${elementPair.id}${selected ? " is-selected" : ""}" type="button" data-element="${elementPair.id}" data-current-id="${current.id}" data-alternate-id="${alternate.id}" aria-pressed="${Boolean(selected)}" aria-label="${elementPair.zh}：当前${current.name}，点击切换到${alternate.name}">
+      <span class="meridian-current"><b>${current.name.replace("经", "")}</b><small>${current.code}</small></span>
+    </button>`;
+  }).join("");
 }
 
-function renderChart(element) {
+function renderChart(item) {
+  const element = item.element;
   const mother = MOTHER_OF[element];
   const child = CHILD_OF[element];
   const controller = CONTROLLER_OF[element];
@@ -98,7 +124,29 @@ function renderChart(element) {
     </g>`;
   }).join("");
 
-  chart.innerHTML = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"></path></marker></defs>${edgeMarkup}${nodeMarkup}`;
+  const chartPointRoles = [
+    { role: "母", roleClass: "mother", element: mother, points: item.jeong.plus },
+    { role: "子", roleClass: "child", element: child, points: item.seung.minus },
+    { role: "克我", roleClass: "controller", element: controller, points: item.jeong.minus }
+  ];
+  const hasWoodPointGroup = chartPointRoles.some(({ element: roleElement }) => roleElement === "wood");
+  const hasEarthPointGroup = chartPointRoles.some(({ element: roleElement }) => roleElement === "earth");
+  const chartPointGroups = chartPointRoles.map(({ role, roleClass, element: roleElement, points }) => {
+    const position = {
+      ...CHART_POINT_POSITIONS[roleElement],
+      ...(roleElement === "water" && hasWoodPointGroup ? { y: 190 } : {}),
+      ...(roleElement === "metal" && hasEarthPointGroup ? { y: 190 } : {})
+    };
+    const orderedPoints = currentMeridianFirst(points, item.code);
+    return `<foreignObject class="chart-point-group is-${roleClass}" x="${position.x}" y="${position.y}" width="74" height="140" role="img" aria-label="${role}：${orderedPoints.join("、")}">
+      <div class="chart-point-stack" xmlns="http://www.w3.org/1999/xhtml">
+        <span class="chart-point-role">${role}</span>
+        ${orderedPoints.map(pointMarkup).join("")}
+      </div>
+    </foreignObject>`;
+  }).join("");
+
+  chart.innerHTML = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"></path></marker></defs>${edgeMarkup}${chartPointGroups}${nodeMarkup}`;
 }
 
 function renderMeridianCard(item) {
@@ -108,13 +156,9 @@ function renderMeridianCard(item) {
       <div class="meridian-title"><strong id="${item.id}-title">${item.name}</strong><span>${item.code}</span></div>
       <span class="phase-badge">${item.elementZh}</span>
     </div>
-    <div class="point-pair">
-      <div class="point-block"><span>虚 · 补母</span><b>${pointMarkup(item.mother)}</b></div>
-      <div class="point-block"><span>实 · 泻子</span><b>${pointMarkup(item.child)}</b></div>
-    </div>
-    <div class="formula-panel">
-      <div class="formula-row"><span class="formula-label">正格</span><span class="formula-points">${formulaMarkup(item.jeong)}</span></div>
-      <div class="formula-row"><span class="formula-label">胜格</span><span class="formula-points">${formulaMarkup(item.seung)}</span></div>
+    <div class="formula-panel" aria-label="虚实配穴公式">
+      <div class="formula-column"><span class="formula-label">虚 · 正格</span><span class="formula-points">${formulaMarkup(item.jeong, item.code, { plus: "补·母", minus: "泻·克我" })}</span></div>
+      <div class="formula-column"><span class="formula-label">实 · 胜格</span><span class="formula-points">${formulaMarkup(item.seung, item.code, { plus: "补·克我", minus: "泻·子" })}</span></div>
     </div>
   </article>`;
 }
@@ -123,13 +167,15 @@ function selectMeridian(id) {
   const item = MERIDIANS.find((candidate) => candidate.id === id) || MERIDIANS[0];
   selectedMeridianId = item.id;
   renderSelector();
-  renderChart(item.element);
+  renderChart(item);
   renderMeridianCard(item);
 }
 
 selector.addEventListener("click", (event) => {
   const button = event.target.closest(".meridian-button");
-  if (button) selectMeridian(button.dataset.id);
+  if (!button) return;
+  const isCurrentElement = MERIDIANS.find((item) => item.id === selectedMeridianId)?.element === button.dataset.element;
+  selectMeridian(isCurrentElement ? button.dataset.alternateId : button.dataset.currentId);
 });
 
 selectMeridian(selectedMeridianId);
