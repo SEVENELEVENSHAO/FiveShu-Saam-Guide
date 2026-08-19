@@ -13,6 +13,21 @@ const MERIDIANS = [
   { id: "lr", name: "肝经", code: "LR", yinYang: "yin", element: "wood", elementZh: "木", mother: "曲泉 LR8", child: "行间 LR2", jeong: { plus: ["阴谷 KI10", "曲泉 LR8"], minus: ["经渠 LU8", "中封 LR4"] }, seung: { plus: ["经渠 LU8", "中封 LR4"], minus: ["少府 HT8", "行间 LR2"] } }
 ];
 
+const POINT_ELEMENTS = {
+  LU5: ["water", "水"], LU8: ["metal", "金"], LU9: ["earth", "土"], LU10: ["fire", "火"],
+  LI1: ["metal", "金"], LI2: ["water", "水"], LI5: ["fire", "火"], LI11: ["earth", "土"],
+  ST36: ["earth", "土"], ST41: ["fire", "火"], ST43: ["wood", "木"], ST45: ["metal", "金"],
+  SP1: ["wood", "木"], SP2: ["fire", "火"], SP3: ["earth", "土"], SP5: ["metal", "金"],
+  HT3: ["water", "水"], HT7: ["earth", "土"], HT8: ["fire", "火"], HT9: ["wood", "木"],
+  SI2: ["water", "水"], SI3: ["wood", "木"], SI5: ["fire", "火"], SI8: ["earth", "土"],
+  BL40: ["earth", "土"], BL65: ["wood", "木"], BL66: ["water", "水"], BL67: ["metal", "金"],
+  KI1: ["wood", "木"], KI3: ["earth", "土"], KI7: ["metal", "金"], KI10: ["water", "水"],
+  PC3: ["water", "水"], PC7: ["earth", "土"], PC9: ["wood", "木"],
+  TE2: ["water", "水"], TE3: ["wood", "木"], TE10: ["earth", "土"],
+  GB38: ["fire", "火"], GB41: ["wood", "木"], GB43: ["water", "水"], GB44: ["metal", "金"],
+  LR1: ["wood", "木"], LR2: ["fire", "火"], LR4: ["metal", "金"], LR8: ["water", "水"]
+};
+
 const grid = document.querySelector("#meridianGrid");
 const emptyState = document.querySelector("#emptyState");
 const searchInput = document.querySelector("#meridianSearch");
@@ -22,7 +37,15 @@ const logicText = document.querySelector("#logicText");
 let activeFilter = "all";
 
 function formulaMarkup(formula) {
-  return `<span class="tonify">补 ${formula.plus.join(" · ")}</span><br><span class="sedate">泻 ${formula.minus.join(" · ")}</span>`;
+  return `<span class="tonify">补 ${formula.plus.map(pointMarkup).join(" · ")}</span><br><span class="sedate">泻 ${formula.minus.map(pointMarkup).join(" · ")}</span>`;
+}
+
+function pointMarkup(point) {
+  const match = point.match(/^(.*?)\s+([A-Z]+\d+)$/);
+  if (!match) return point;
+  const [, name, code] = match;
+  const [element, elementZh] = POINT_ELEMENTS[code] || ["metal", "五行未标注"];
+  return `<span class="point-with-element"><span>${name}</span><span class="element-swatch phase-${element}" role="img" aria-label="五行：${elementZh}" title="${elementZh}"></span><span>${code}</span></span>`;
 }
 
 function renderMeridians() {
@@ -39,8 +62,8 @@ function renderMeridians() {
         <span class="phase-badge phase-${item.element}">${item.elementZh}</span>
       </span>
       <span class="point-pair">
-        <span class="point-block"><span>虚 · 补母</span><b>${item.mother}</b></span>
-        <span class="point-block"><span>实 · 泻子</span><b>${item.child}</b></span>
+        <span class="point-block"><span>虚 · 补母</span><b>${pointMarkup(item.mother)}</b></span>
+        <span class="point-block"><span>实 · 泻子</span><b>${pointMarkup(item.child)}</b></span>
       </span>
       <span class="formula-panel">
         <span class="formula-row"><span class="formula-label">正格</span><span class="formula-points">${formulaMarkup(item.jeong)}</span></span>
@@ -61,8 +84,8 @@ function updateCalculation() {
       <span class="result-tag">${isDeficiency ? "虚" : "实"}</span>
     </div>
     <div class="treatment-columns">
-      <div class="treatment-group"><span>补</span><strong>${formula.plus.join("<br>")}</strong></div>
-      <div class="treatment-group"><span>泻</span><strong>${formula.minus.join("<br>")}</strong></div>
+      <div class="treatment-group"><span>补</span><strong>${formula.plus.map(pointMarkup).join("<br>")}</strong></div>
+      <div class="treatment-group"><span>泻</span><strong>${formula.minus.map(pointMarkup).join("<br>")}</strong></div>
     </div>`;
   logicText.textContent = isDeficiency ? "正格：补母经与本经母穴，泻克我经与本经克我穴。" : "胜格：补克我经与本经克我穴，泻子经与本经子穴。";
 }
