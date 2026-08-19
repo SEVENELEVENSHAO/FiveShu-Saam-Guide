@@ -31,7 +31,21 @@ const POINT_ELEMENTS = {
 const grid = document.querySelector("#meridianGrid");
 const selector = document.querySelector("#meridianSelector");
 const chart = document.querySelector("#elementChart");
+const appIcon = document.querySelector("#appIcon");
 let selectedMeridianId = "lu";
+let appIconIndex = 0;
+
+const APP_ICONS = ["⭐", "🌳", "🔥", "🌍", "🪙", "💧"];
+
+function setAppIcon(emoji) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`;
+  appIcon.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+document.addEventListener("click", () => {
+  appIconIndex = (appIconIndex + 1) % APP_ICONS.length;
+  setAppIcon(APP_ICONS[appIconIndex]);
+});
 
 const ELEMENT_PAIRS = [
   { id: "wood", zh: "木", meridians: ["lr", "gb"] },
