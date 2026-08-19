@@ -29,12 +29,6 @@ const POINT_ELEMENTS = {
 };
 
 const grid = document.querySelector("#meridianGrid");
-const emptyState = document.querySelector("#emptyState");
-const searchInput = document.querySelector("#meridianSearch");
-const select = document.querySelector("#meridianSelect");
-const result = document.querySelector("#calculationResult");
-const logicText = document.querySelector("#logicText");
-let activeFilter = "all";
 
 function formulaMarkup(formula) {
   return `<span class="formula-action tonify">补</span><span class="formula-point-list">${formula.plus.map(pointMarkup).join("")}</span><span class="formula-action sedate">泻</span><span class="formula-point-list">${formula.minus.map(pointMarkup).join("")}</span>`;
@@ -48,76 +42,18 @@ function pointMarkup(point) {
   return `<span class="five-point-tile" role="img" aria-label="${name} ${code}，五行属${elementZh}" title="${elementZh}"><span class="five-point-name phase-${element}">${name}</span><span class="five-point-code">${code}</span></span>`;
 }
 
-function renderMeridians() {
-  const query = searchInput.value.trim().toLowerCase();
-  const list = MERIDIANS.filter((item) => {
-    const matchesFilter = activeFilter === "all" || item.yinYang === activeFilter;
-    const searchable = `${item.name} ${item.code} ${item.elementZh} ${item.mother} ${item.child} ${item.jeong.plus} ${item.jeong.minus} ${item.seung.plus} ${item.seung.minus}`.toLowerCase();
-    return matchesFilter && searchable.includes(query);
-  });
-  grid.innerHTML = list.map((item) => `
-    <button class="meridian-card" type="button" aria-expanded="false" data-id="${item.id}" aria-label="${item.name}，点击查看舍岩正格与胜格">
-      <span class="card-heading">
-        <span class="meridian-title"><strong>${item.name}</strong><span>${item.code} · ${item.yinYang === "yin" ? "阴" : "阳"}</span></span>
-        <span class="phase-badge phase-${item.element}">${item.elementZh}</span>
-      </span>
-      <span class="point-pair">
-        <span class="point-block"><span>虚 · 补母</span><b>${pointMarkup(item.mother)}</b></span>
-        <span class="point-block"><span>实 · 泻子</span><b>${pointMarkup(item.child)}</b></span>
-      </span>
-      <span class="formula-panel">
-        <span class="formula-row"><span class="formula-label">正格</span><span class="formula-points">${formulaMarkup(item.jeong)}</span></span>
-        <span class="formula-row"><span class="formula-label">胜格</span><span class="formula-points">${formulaMarkup(item.seung)}</span></span>
-      </span>
-    </button>`).join("");
-  emptyState.hidden = list.length > 0;
-}
-
-function updateCalculation() {
-  const item = MERIDIANS.find((entry) => entry.id === select.value) || MERIDIANS[0];
-  const pattern = document.querySelector('input[name="pattern"]:checked').value;
-  const isDeficiency = pattern === "deficiency";
-  const formula = isDeficiency ? item.jeong : item.seung;
-  result.innerHTML = `
-    <div class="result-head">
-      <div><p>${item.code} · ${item.elementZh} · ${item.yinYang === "yin" ? "阴经" : "阳经"}</p><h3>${item.name}${isDeficiency ? "正格" : "胜格"}</h3></div>
-      <span class="result-tag">${isDeficiency ? "虚" : "实"}</span>
+grid.innerHTML = MERIDIANS.map((item) => `
+  <article class="meridian-card meridian-${item.element}" aria-labelledby="${item.id}-title">
+    <div class="card-heading">
+      <div class="meridian-title"><strong id="${item.id}-title">${item.name}</strong><span>${item.code}</span></div>
+      <span class="phase-badge">${item.elementZh}</span>
     </div>
-    <div class="treatment-columns">
-      <div class="treatment-group"><span>补</span><strong class="treatment-point-list">${formula.plus.map(pointMarkup).join("")}</strong></div>
-      <div class="treatment-group"><span>泻</span><strong class="treatment-point-list">${formula.minus.map(pointMarkup).join("")}</strong></div>
-    </div>`;
-  logicText.textContent = isDeficiency ? "正格：补母经与本经母穴，泻克我经与本经克我穴。" : "胜格：补克我经与本经克我穴，泻子经与本经子穴。";
-}
-
-MERIDIANS.forEach((item) => select.insertAdjacentHTML("beforeend", `<option value="${item.id}">${item.name} · ${item.code} · ${item.elementZh}</option>`));
-renderMeridians();
-updateCalculation();
-
-searchInput.addEventListener("input", renderMeridians);
-document.querySelectorAll(".filter-chip").forEach((button) => button.addEventListener("click", () => {
-  activeFilter = button.dataset.filter;
-  document.querySelectorAll(".filter-chip").forEach((chip) => { chip.classList.toggle("is-active", chip === button); chip.setAttribute("aria-pressed", String(chip === button)); });
-  renderMeridians();
-}));
-grid.addEventListener("click", (event) => {
-  const card = event.target.closest(".meridian-card");
-  if (!card) return;
-  card.setAttribute("aria-expanded", String(card.getAttribute("aria-expanded") !== "true"));
-});
-document.querySelector("#calculatorForm").addEventListener("change", updateCalculation);
-
-document.querySelectorAll(".nav-item").forEach((button) => button.addEventListener("click", () => {
-  const target = button.dataset.target;
-  document.querySelectorAll(".view").forEach((view) => { const active = view.dataset.view === target; view.hidden = !active; view.classList.toggle("is-active", active); });
-  document.querySelectorAll(".nav-item").forEach((item) => { const active = item === button; item.classList.toggle("is-active", active); active ? item.setAttribute("aria-current", "page") : item.removeAttribute("aria-current"); });
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}));
-
-const dialog = document.querySelector("#infoDialog");
-const infoButton = document.querySelector("#infoButton");
-infoButton.addEventListener("click", () => dialog.showModal());
-document.querySelector("#closeDialog").addEventListener("click", () => dialog.close());
-document.querySelector("#understoodButton").addEventListener("click", () => dialog.close());
-dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
-dialog.addEventListener("close", () => infoButton.focus());
+    <div class="point-pair">
+      <div class="point-block"><span>虚 · 补母</span><b>${pointMarkup(item.mother)}</b></div>
+      <div class="point-block"><span>实 · 泻子</span><b>${pointMarkup(item.child)}</b></div>
+    </div>
+    <div class="formula-panel">
+      <div class="formula-row"><span class="formula-label">正格</span><span class="formula-points">${formulaMarkup(item.jeong)}</span></div>
+      <div class="formula-row"><span class="formula-label">胜格</span><span class="formula-points">${formulaMarkup(item.seung)}</span></div>
+    </div>
+  </article>`).join("");
