@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4f1e9" />
+    <meta name="description" content="五输穴子母补泻与韩国舍岩针法的移动端视觉参考工具" />
+    <title>AcuGuide · 五输穴与舍岩针法</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">五输穴视觉参考</p>
+          <h1>AcuGuide</h1>
+        </div>
+        <button class="icon-button" id="infoButton" type="button" aria-label="查看使用说明">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg>
+        </button>
+      </header>
+
+      <main id="main-content">
+        <section class="view is-active" id="referenceView" data-view="reference" aria-labelledby="referenceTitle">
+          <div class="intro-block">
+            <p class="kicker">快速查询</p>
+            <h2 id="referenceTitle">从一条经开始</h2>
+            <p>查看本经母子穴，再展开韩国舍岩正格与胜格。</p>
+          </div>
+
+          <label class="search-field" for="meridianSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+            <input id="meridianSearch" type="search" inputmode="search" autocomplete="off" placeholder="搜索经脉、穴名或编号" />
+          </label>
+
+          <div class="filter-row" role="group" aria-label="阴阳经筛选">
+            <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">全部</button>
+            <button class="filter-chip" type="button" data-filter="yin" aria-pressed="false">阴经</button>
+            <button class="filter-chip" type="button" data-filter="yang" aria-pressed="false">阳经</button>
+          </div>
+
+          <div class="meridian-grid" id="meridianGrid" aria-live="polite"></div>
+          <div class="empty-state" id="emptyState" hidden>
+            <p class="empty-title">没有匹配的经脉</p>
+            <p>试试输入“太渊”“LU9”或“肺”。</p>
+          </div>
+        </section>
+
+        <section class="view" id="calculatorView" data-view="calculator" aria-labelledby="calculatorTitle" hidden>
+          <div class="intro-block">
+            <p class="kicker">关系推演</p>
+            <h2 id="calculatorTitle">子母补泻计算器</h2>
+            <p>先选经脉，再选传统辨证倾向。结果用于学习复核，不代替辨证。</p>
+          </div>
+
+          <form class="calculator-form" id="calculatorForm">
+            <fieldset>
+              <legend>1. 选择病经</legend>
+              <label for="meridianSelect">经脉</label>
+              <select id="meridianSelect" name="meridian"></select>
+            </fieldset>
+            <fieldset>
+              <legend>2. 选择虚实</legend>
+              <div class="segmented-control">
+                <label><input type="radio" name="pattern" value="deficiency" checked /><span>虚 · 正格</span></label>
+                <label><input type="radio" name="pattern" value="excess" /><span>实 · 胜格</span></label>
+              </div>
+            </fieldset>
+          </form>
+
+          <article class="result-card" id="calculationResult" aria-live="polite"></article>
+          <div class="logic-note">
+            <p class="logic-title">记忆逻辑</p>
+            <p id="logicText">正格：补母，泻克我。</p>
+          </div>
+        </section>
+
+        <section class="view" id="learnView" data-view="learn" aria-labelledby="learnTitle" hidden>
+          <div class="intro-block">
+            <p class="kicker">核心框架</p>
+            <h2 id="learnTitle">三分钟读懂</h2>
+            <p>把五输穴、本经子母法与韩国舍岩针法分清楚。</p>
+          </div>
+
+          <div class="phase-strip" aria-label="五行相生顺序">
+            <span class="phase phase-wood">木</span><i aria-hidden="true">→</i>
+            <span class="phase phase-fire">火</span><i aria-hidden="true">→</i>
+            <span class="phase phase-earth">土</span><i aria-hidden="true">→</i>
+            <span class="phase phase-metal">金</span><i aria-hidden="true">→</i>
+            <span class="phase phase-water">水</span>
+          </div>
+
+          <div class="learning-list">
+            <article class="learning-item">
+              <span class="step-number">01</span>
+              <div><h3>五输穴是分类</h3><p>井、荥、输、经、合各配五行。阴经为木火土金水；阳经为金水木火土。</p></div>
+            </article>
+            <article class="learning-item">
+              <span class="step-number">02</span>
+              <div><h3>本经子母法走相生轴</h3><p>虚者补其母，实者泻其子。必须先确认病经与虚实。</p></div>
+            </article>
+            <article class="learning-item">
+              <span class="step-number">03</span>
+              <div><h3>舍岩法再加入相克轴</h3><p>正格补母、泻克我；胜格补克我、泻子。典型结构为跨经四穴、两补两泻。</p></div>
+            </article>
+          </div>
+
+          <details class="source-panel">
+            <summary>证据与使用边界</summary>
+            <p>历史与处方结构有较一致的文献支持，但具体疾病疗效证据仍有限。传统方义不能写成已证实的现代生物医学疗效。</p>
+            <p>本工具不提供针刺深度、角度、捻转或留针参数。针刺须由具资质并受过无菌及解剖训练的专业人员实施。</p>
+          </details>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="主要导航">
+        <button class="nav-item is-active" type="button" data-target="reference" aria-current="page">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5zM20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5z"></path></svg>
+          <span>经脉</span>
+        </button>
+        <button class="nav-item" type="button" data-target="calculator">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"></path><circle cx="12" cy="12" r="9"></circle></svg>
+          <span>推演</span>
+        </button>
+        <button class="nav-item" type="button" data-target="learn">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3zM9 22h6"></path></svg>
+          <span>原理</span>
+        </button>
+      </nav>
+    </div>
+
+    <dialog id="infoDialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <div><p class="eyebrow">关于本工具</p><h2>专业学习参考</h2></div>
+          <button class="icon-button" id="closeDialog" type="button" aria-label="关闭使用说明">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <p>内容依据《针灸治疗学》、Deadman《A Manual of Acupuncture》以及韩国舍岩针法学术资料整理。</p>
+        <div class="safety-callout"><strong>安全提示</strong><span>不要凭本页面自行针刺，也不要用固定处方替代诊断、急症评估或必要的常规治疗。</span></div>
+        <button class="primary-button" id="understoodButton" type="button">我已了解</button>
+      </div>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
