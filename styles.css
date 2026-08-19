@@ -71,20 +71,24 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-lineca
 .point-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
 .point-block { padding: 13px; border: 1px solid hsl(var(--line) / .18); border-radius: 10px; color: hsl(var(--foreground)); background: hsl(var(--surface) / .92); }
 .point-block > span { display: block; margin-bottom: 5px; color: hsl(var(--muted)); font-size: .75rem; }
-.point-block b { font-size: .95rem; font-weight: 700; }
-.point-with-element { display: inline-flex; align-items: center; gap: 5px; }
-.element-swatch { display: inline-block; width: 9px; height: 9px; flex: 0 0 9px; border: 1px solid hsl(var(--line) / .5); border-radius: 2px; box-shadow: 1px 1px 0 hsl(var(--line) / .22); }
-.element-swatch.phase-wood { background: hsl(var(--element-wood)); }
-.element-swatch.phase-fire { background: hsl(var(--element-fire)); }
-.element-swatch.phase-earth { background: hsl(var(--element-earth)); }
-.element-swatch.phase-metal { background: hsl(var(--element-metal)); }
-.element-swatch.phase-water { background: hsl(var(--element-water)); }
+.point-block b { display: flex; font-size: .95rem; font-weight: 700; }
+.five-point-tile { display: inline-grid; min-width: 62px; grid-template-rows: 31px 25px; overflow: hidden; vertical-align: middle; border: 1.5px solid hsl(var(--line)); border-radius: 9px; color: hsl(var(--foreground)); background: hsl(var(--surface)); box-shadow: 2px 2px 0 hsl(var(--line)); }
+.five-point-name, .five-point-code { display: grid; min-width: 0; padding: 3px 7px; place-items: center; text-align: center; font-weight: 850; line-height: 1; }
+.five-point-name { color: white; font-size: .82rem; text-shadow: 0 1px 1px hsl(0 0% 0% / .2); }
+.five-point-code { color: hsl(var(--foreground)); background: hsl(var(--surface)); font-size: .72rem; font-variant-numeric: tabular-nums; }
+.five-point-name.phase-wood { background: hsl(var(--element-wood)); }
+.five-point-name.phase-fire { background: hsl(var(--element-fire)); }
+.five-point-name.phase-earth { background: hsl(var(--element-earth)); }
+.five-point-name.phase-metal { background: hsl(var(--element-metal)); }
+.five-point-name.phase-water { background: hsl(var(--element-water)); }
 .formula-panel { display: none; margin-top: 16px; padding: 14px; border: 1.5px solid hsl(var(--line)); border-radius: 10px; color: hsl(var(--foreground)); background: hsl(var(--surface) / .94); box-shadow: 3px 3px 0 hsl(var(--line)); }
 .meridian-card[aria-expanded="true"] .formula-panel { display: block; animation: reveal 180ms ease-out; }
 .formula-row { display: grid; grid-template-columns: 58px 1fr; gap: 12px; padding: 8px 0; }
 .formula-row + .formula-row { border-top: 1px solid hsl(var(--line) / .75); }
 .formula-label { color: hsl(var(--muted)); font-size: .82rem; font-weight: 700; }
-.formula-points { font-size: .9rem; line-height: 1.6; }
+.formula-points { display: grid; grid-template-columns: auto 1fr; gap: 10px 8px; align-items: start; font-size: .9rem; line-height: 1.6; }
+.formula-action { padding-top: 18px; font-weight: 850; }
+.formula-point-list, .treatment-point-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .tonify { color: hsl(var(--primary)); font-weight: 750; }
 .sedate { color: hsl(var(--warning)); font-weight: 750; }
 .empty-state { padding: 60px 20px; text-align: center; color: hsl(var(--muted)); }
@@ -107,7 +111,7 @@ select { width: 100%; min-height: 52px; padding: 0 16px; border: 1px solid hsl(v
 .treatment-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
 .treatment-group { padding: 15px; border-radius: 13px; background: hsl(var(--primary-foreground) / .1); }
 .treatment-group span { display: block; margin-bottom: 8px; opacity: .7; font-size: .75rem; }
-.treatment-group strong { display: block; line-height: 1.65; }
+.treatment-group strong { line-height: 1.65; }
 .logic-note { margin-top: 12px; padding: 16px 18px; border: 1.5px solid hsl(var(--line)); border-radius: 12px; background: hsl(var(--surface)); box-shadow: 4px 4px 0 hsl(var(--line)); }
 .logic-note p { margin-bottom: 0; line-height: 1.55; }
 .logic-title { margin-bottom: 5px !important; color: hsl(var(--primary)); font-size: .76rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }

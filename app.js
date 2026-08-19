@@ -37,7 +37,7 @@ const logicText = document.querySelector("#logicText");
 let activeFilter = "all";
 
 function formulaMarkup(formula) {
-  return `<span class="tonify">补 ${formula.plus.map(pointMarkup).join(" · ")}</span><br><span class="sedate">泻 ${formula.minus.map(pointMarkup).join(" · ")}</span>`;
+  return `<span class="formula-action tonify">补</span><span class="formula-point-list">${formula.plus.map(pointMarkup).join("")}</span><span class="formula-action sedate">泻</span><span class="formula-point-list">${formula.minus.map(pointMarkup).join("")}</span>`;
 }
 
 function pointMarkup(point) {
@@ -45,7 +45,7 @@ function pointMarkup(point) {
   if (!match) return point;
   const [, name, code] = match;
   const [element, elementZh] = POINT_ELEMENTS[code] || ["metal", "五行未标注"];
-  return `<span class="point-with-element"><span>${name}</span><span class="element-swatch phase-${element}" role="img" aria-label="五行：${elementZh}" title="${elementZh}"></span><span>${code}</span></span>`;
+  return `<span class="five-point-tile" role="img" aria-label="${name} ${code}，五行属${elementZh}" title="${elementZh}"><span class="five-point-name phase-${element}">${name}</span><span class="five-point-code">${code}</span></span>`;
 }
 
 function renderMeridians() {
@@ -84,8 +84,8 @@ function updateCalculation() {
       <span class="result-tag">${isDeficiency ? "虚" : "实"}</span>
     </div>
     <div class="treatment-columns">
-      <div class="treatment-group"><span>补</span><strong>${formula.plus.map(pointMarkup).join("<br>")}</strong></div>
-      <div class="treatment-group"><span>泻</span><strong>${formula.minus.map(pointMarkup).join("<br>")}</strong></div>
+      <div class="treatment-group"><span>补</span><strong class="treatment-point-list">${formula.plus.map(pointMarkup).join("")}</strong></div>
+      <div class="treatment-group"><span>泻</span><strong class="treatment-point-list">${formula.minus.map(pointMarkup).join("")}</strong></div>
     </div>`;
   logicText.textContent = isDeficiency ? "正格：补母经与本经母穴，泻克我经与本经克我穴。" : "胜格：补克我经与本经克我穴，泻子经与本经子穴。";
 }
