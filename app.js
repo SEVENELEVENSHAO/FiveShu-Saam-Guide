@@ -29,6 +29,22 @@ const POINT_ELEMENTS = {
 };
 
 const grid = document.querySelector("#meridianGrid");
+const selector = document.querySelector("#meridianSelector");
+const chart = document.querySelector("#elementChart");
+let selectedMeridianId = "lu";
+
+const ELEMENTS = {
+  fire: { zh: "火", x: 180, y: 48 },
+  earth: { zh: "土", x: 295, y: 132 },
+  metal: { zh: "金", x: 250, y: 268 },
+  water: { zh: "水", x: 110, y: 268 },
+  wood: { zh: "木", x: 65, y: 132 }
+};
+const MOTHER_OF = { wood: "water", fire: "wood", earth: "fire", metal: "earth", water: "metal" };
+const CHILD_OF = { wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" };
+const CONTROLLER_OF = { wood: "metal", fire: "water", earth: "wood", metal: "fire", water: "earth" };
+const GENERATION_EDGES = [["wood", "fire"], ["fire", "earth"], ["earth", "metal"], ["metal", "water"], ["water", "wood"]];
+const CONTROL_EDGES = [["wood", "earth"], ["earth", "water"], ["water", "fire"], ["fire", "metal"], ["metal", "wood"]];
 
 function formulaMarkup(formula) {
   return `<span class="formula-action tonify">补</span><span class="formula-point-list">${formula.plus.map(pointMarkup).join("")}</span><span class="formula-action sedate">泻</span><span class="formula-point-list">${formula.minus.map(pointMarkup).join("")}</span>`;
@@ -42,7 +58,51 @@ function pointMarkup(point) {
   return `<span class="five-point-tile" role="img" aria-label="${name} ${code}，五行属${elementZh}" title="${elementZh}"><span class="five-point-name phase-${element}">${name}</span><span class="five-point-code">${code}</span></span>`;
 }
 
-grid.innerHTML = MERIDIANS.map((item) => `
+function renderSelector() {
+  selector.innerHTML = MERIDIANS.map((item) => `
+    <button class="meridian-button meridian-${item.element}${item.id === selectedMeridianId ? " is-selected" : ""}" type="button" data-id="${item.id}" aria-pressed="${item.id === selectedMeridianId}">
+      <strong>${item.name.replace("经", "")}</strong><span>${item.code}</span>
+    </button>`).join("");
+  selector.querySelector(`[data-id="${selectedMeridianId}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
+}
+
+function renderChart(element) {
+  const mother = MOTHER_OF[element];
+  const child = CHILD_OF[element];
+  const controller = CONTROLLER_OF[element];
+  const edgeMarkup = [
+    ...GENERATION_EDGES.map(([from, to]) => ({ from, to, type: "generation" })),
+    ...CONTROL_EDGES.map(([from, to]) => ({ from, to, type: "control" }))
+  ].map(({ from, to, type }) => {
+    const start = ELEMENTS[from];
+    const end = ELEMENTS[to];
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const distance = Math.hypot(dx, dy);
+    const x1 = start.x + (dx / distance) * 37;
+    const y1 = start.y + (dy / distance) * 37;
+    const x2 = end.x - (dx / distance) * 42;
+    const y2 = end.y - (dy / distance) * 42;
+    let relation = "";
+    if (type === "generation" && from === mother && to === element) relation = " is-mother-link";
+    if (type === "generation" && from === element && to === child) relation = " is-child-link";
+    if (type === "control" && from === controller && to === element) relation = " is-controller-link";
+    return `<line class="element-edge ${type}${relation}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arrow)" />`;
+  }).join("");
+
+  const roleFor = (key) => key === element ? ["is-self", "本"] : key === mother ? ["is-mother", "母"] : key === child ? ["is-child", "子"] : key === controller ? ["is-controller", "克"] : ["", ""];
+  const nodeMarkup = Object.entries(ELEMENTS).map(([key, item]) => {
+    const [roleClass, roleLabel] = roleFor(key);
+    return `<g class="element-node phase-${key} ${roleClass}" transform="translate(${item.x} ${item.y})">
+      <circle r="32"></circle><text class="element-name" text-anchor="middle" y="1">${item.zh}</text><text class="element-role" text-anchor="middle" y="18">${roleLabel}</text>
+    </g>`;
+  }).join("");
+
+  chart.innerHTML = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"></path></marker></defs>${edgeMarkup}${nodeMarkup}`;
+}
+
+function renderMeridianCard(item) {
+  grid.innerHTML = `
   <article class="meridian-card meridian-${item.element}" aria-labelledby="${item.id}-title">
     <div class="card-heading">
       <div class="meridian-title"><strong id="${item.id}-title">${item.name}</strong><span>${item.code}</span></div>
@@ -56,4 +116,20 @@ grid.innerHTML = MERIDIANS.map((item) => `
       <div class="formula-row"><span class="formula-label">正格</span><span class="formula-points">${formulaMarkup(item.jeong)}</span></div>
       <div class="formula-row"><span class="formula-label">胜格</span><span class="formula-points">${formulaMarkup(item.seung)}</span></div>
     </div>
-  </article>`).join("");
+  </article>`;
+}
+
+function selectMeridian(id) {
+  const item = MERIDIANS.find((candidate) => candidate.id === id) || MERIDIANS[0];
+  selectedMeridianId = item.id;
+  renderSelector();
+  renderChart(item.element);
+  renderMeridianCard(item);
+}
+
+selector.addEventListener("click", (event) => {
+  const button = event.target.closest(".meridian-button");
+  if (button) selectMeridian(button.dataset.id);
+});
+
+selectMeridian(selectedMeridianId);
